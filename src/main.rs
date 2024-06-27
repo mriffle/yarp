@@ -8,7 +8,7 @@ use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 
-const VERSION: &str = "0.0.2";
+const VERSION: &str = "0.0.3";
 const PROGRAM_NAME: &str = "YARP (Yet Another Rearranger of Peptides)";
 
 #[derive(Clone, Copy, Debug)]
@@ -111,50 +111,75 @@ fn parse_args(args: &[String]) -> Result<Config, String> {
 
     let mut i = 1;
     while i < args.len() {
-        match args[i].as_str() {
-            "--fasta" => {
-                i += 1;
-                if i >= args.len() {
-                    return Err("Missing value for --fasta".to_string());
-                }
-                config.input_path = args[i].clone();
-            },
-            "--method" => {
-                i += 1;
-                if i >= args.len() {
-                    return Err("Missing value for --method".to_string());
-                }
-                config.decoy_method = match args[i].as_str() {
-                    "shuffle" => DecoyMethod::Shuffle,
-                    "reverse" => DecoyMethod::Reverse,
-                    _ => return Err(format!("Invalid decoy method: {}. Use 'shuffle' or 'reverse'.", args[i])),
-                };
-            },
-            "--decoy-string" => {
-                i += 1;
-                if i >= args.len() {
-                    return Err("Missing value for --decoy-string".to_string());
-                }
-                config.decoy_prefix = args[i].clone();
-            },
-            "--seed" => {
-                i += 1;
-                if i >= args.len() {
-                    return Err("Missing value for --seed".to_string());
-                }
-                config.seed = args[i].parse().map_err(|_| format!("Invalid seed value: {}", args[i]))?;
-            },
-            "--protease" => {
-                i += 1;
-                if i >= args.len() {
-                    return Err("Missing value for --protease".to_string());
-                }
-                config.protease = match args[i].as_str() {
-                    "trypsin" => Protease::Trypsin,
-                    _ => return Err(format!("Invalid protease: {}. Only 'trypsin' is currently supported.", args[i])),
-                };
-            },
-            _ => return Err(format!("Unknown argument: {}", args[i])),
+        let arg = &args[i];
+        if let Some((key, value)) = arg.split_once('=') {
+            // Handle arguments in the format --key=value
+            match key {
+                "--fasta" => config.input_path = value.to_string(),
+                "--method" => {
+                    config.decoy_method = match value {
+                        "shuffle" => DecoyMethod::Shuffle,
+                        "reverse" => DecoyMethod::Reverse,
+                        _ => return Err(format!("Invalid decoy method: {}. Use 'shuffle' or 'reverse'.", value)),
+                    }
+                },
+                "--decoy-string" => config.decoy_prefix = value.to_string(),
+                "--seed" => config.seed = value.parse().map_err(|_| format!("Invalid seed value: {}", value))?,
+                "--protease" => {
+                    config.protease = match value {
+                        "trypsin" => Protease::Trypsin,
+                        _ => return Err(format!("Invalid protease: {}. Only 'trypsin' is currently supported.", value)),
+                    }
+                },
+                _ => return Err(format!("Unknown argument: {}", arg)),
+            }
+        } else {
+            // Handle arguments in the format --key value
+            match arg.as_str() {
+                "--fasta" => {
+                    i += 1;
+                    if i >= args.len() {
+                        return Err("Missing value for --fasta".to_string());
+                    }
+                    config.input_path = args[i].clone();
+                },
+                "--method" => {
+                    i += 1;
+                    if i >= args.len() {
+                        return Err("Missing value for --method".to_string());
+                    }
+                    config.decoy_method = match args[i].as_str() {
+                        "shuffle" => DecoyMethod::Shuffle,
+                        "reverse" => DecoyMethod::Reverse,
+                        _ => return Err(format!("Invalid decoy method: {}. Use 'shuffle' or 'reverse'.", args[i])),
+                    };
+                },
+                "--decoy-string" => {
+                    i += 1;
+                    if i >= args.len() {
+                        return Err("Missing value for --decoy-string".to_string());
+                    }
+                    config.decoy_prefix = args[i].clone();
+                },
+                "--seed" => {
+                    i += 1;
+                    if i >= args.len() {
+                        return Err("Missing value for --seed".to_string());
+                    }
+                    config.seed = args[i].parse().map_err(|_| format!("Invalid seed value: {}", args[i]))?;
+                },
+                "--protease" => {
+                    i += 1;
+                    if i >= args.len() {
+                        return Err("Missing value for --protease".to_string());
+                    }
+                    config.protease = match args[i].as_str() {
+                        "trypsin" => Protease::Trypsin,
+                        _ => return Err(format!("Invalid protease: {}. Only 'trypsin' is currently supported.", args[i])),
+                    };
+                },
+                _ => return Err(format!("Unknown argument: {}", arg)),
+            }
         }
         i += 1;
     }
