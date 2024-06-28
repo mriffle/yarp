@@ -3,12 +3,12 @@ use std::io::{BufRead, BufReader, Write, stdout};
 use std::path::Path;
 use std::env;
 use std::process;
-use std::time::{Instant, SystemTime, UNIX_EPOCH};
+use std::time::Instant;
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 
-const VERSION: &str = "0.0.3";
+const VERSION: &str = "0.0.5";
 const PROGRAM_NAME: &str = "YARP (Yet Another Rearranger of Peptides)";
 
 #[derive(Clone, Copy, Debug)]
@@ -79,14 +79,7 @@ fn main() {
     match process_fasta(&config, &mut log_file) {
         Ok(count) => {
             let duration = start_time.elapsed();
-            let end_time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
             if let Err(e) = log_and_print(&mut log_file, &format!("Processed {} FASTA entries", count)) {
-                eprintln!("Error writing to log: {}", e);
-            }
-            if let Err(e) = log_and_print(&mut log_file, &format!("Started at: {}", start_time.elapsed().as_secs())) {
-                eprintln!("Error writing to log: {}", e);
-            }
-            if let Err(e) = log_and_print(&mut log_file, &format!("Completed at: {}", end_time)) {
                 eprintln!("Error writing to log: {}", e);
             }
             if let Err(e) = log_and_print(&mut log_file, &format!("Total runtime: {:?}", duration)) {
@@ -195,7 +188,7 @@ fn parse_args(args: &[String]) -> Result<Config, String> {
     Ok(config)
 }
 
-fn process_fasta(config: &Config, log_file: &mut File) -> std::io::Result<usize> {
+fn process_fasta(config: &Config, _log_file: &mut File) -> std::io::Result<usize> {
     let input_file = File::open(&config.input_path)?;
     let reader = BufReader::new(input_file);
     
@@ -217,9 +210,6 @@ fn process_fasta(config: &Config, log_file: &mut File) -> std::io::Result<usize>
                 write_entry(&mut writer, &current_header, &fixed_sequence)?;
                 write_decoy_entry(config, &mut writer, &current_header, &fixed_sequence, &mut rng)?;
                 entry_count += 1;
-                if let Err(e) = log_and_print(log_file, &format!("Processed entry: {}", current_header)) {
-                    eprintln!("Error writing to log: {}", e);
-                }
                 current_sequence.clear();
             }
             current_header = line;
@@ -234,9 +224,6 @@ fn process_fasta(config: &Config, log_file: &mut File) -> std::io::Result<usize>
         write_entry(&mut writer, &current_header, &fixed_sequence)?;
         write_decoy_entry(config, &mut writer, &current_header, &fixed_sequence, &mut rng)?;
         entry_count += 1;
-        if let Err(e) = log_and_print(log_file, &format!("Processed entry: {}", current_header)) {
-            eprintln!("Error writing to log: {}", e);
-        }
     }
 
     writer.flush()?;
@@ -249,14 +236,12 @@ fn fix_sequence(sequence: &str) -> String {
 
 fn write_entry<W: Write>(writer: &mut W, header: &str, sequence: &str) -> std::io::Result<()> {
     writeln!(writer, "{}", header)?;
-    for chunk in sequence.as_bytes().chunks(60) {
-        writeln!(writer, "{}", std::str::from_utf8(chunk).unwrap())?;
-    }
+    writeln!(writer, "{}", sequence)?;
     Ok(())
 }
 
 fn write_decoy_entry<W: Write>(config: &Config, writer: &mut W, header: &str, sequence: &str, rng: &mut StdRng) -> std::io::Result<()> {
-    let decoy_header = format!("{}{}", config.decoy_prefix, &header[1..]);
+    let decoy_header = format!(">{}{}", config.decoy_prefix, &header[1..]);
     let peptides = digest_sequence(sequence, config.protease);
     let decoy_sequence = match config.decoy_method {
         DecoyMethod::Shuffle => shuffle_peptides(&peptides, rng),
@@ -264,9 +249,7 @@ fn write_decoy_entry<W: Write>(config: &Config, writer: &mut W, header: &str, se
     };
     
     writeln!(writer, "{}", decoy_header)?;
-    for chunk in decoy_sequence.as_bytes().chunks(60) {
-        writeln!(writer, "{}", std::str::from_utf8(chunk).unwrap())?;
-    }
+    writeln!(writer, "{}", decoy_sequence)?;
     Ok(())
 }
 
