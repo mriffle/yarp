@@ -37,7 +37,7 @@ fn reverse_peptides(peptides: &[String]) -> String {
 
 fn best_shuffle_peptides(peptides: &[String], original_sequence: &str, num_shuffles: usize, rng: &mut StdRng) -> String {
     let mut best_shuffle = String::new();
-    let mut best_score = usize::MAX;
+    let mut best_score = (usize::MAX, usize::MAX);
 
     for _ in 0..num_shuffles {
         let shuffled = shuffle_peptides(peptides, rng);
@@ -67,6 +67,13 @@ fn shuffle_peptides(peptides: &[String], rng: &mut StdRng) -> String {
     }).collect()
 }
 
-fn calculate_similarity(sequence1: &str, sequence2: &str) -> usize {
-    sequence1.chars().zip(sequence2.chars()).filter(|&(a, b)| a == b).count()
+fn calculate_similarity(sequence1: &str, sequence2: &str) -> (usize, usize) {
+    let same_adjacency = sequence1.chars().zip(sequence1.chars().skip(1))
+        .zip(sequence2.chars().zip(sequence2.chars().skip(1)))
+        .filter(|&((a1, a2), (b1, b2))| a1 == b1 && a2 == b2)
+        .count();
+
+    let same_position = sequence1.chars().zip(sequence2.chars()).filter(|&(a, b)| a == b).count();
+    
+    (same_adjacency, same_position)
 }
