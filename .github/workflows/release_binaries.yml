@@ -1,0 +1,80 @@
+name: Multi-Platform Build and Release
+
+on:
+  release:
+    types: [created]
+
+env:
+  CARGO_TERM_COLOR: always
+  PROGRAM_NAME: yarp
+
+jobs:
+  build-and-release:
+    name: Build and Release for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: yarp
+            asset_name: yarp-linux-amd64
+          - os: windows-latest
+            artifact_name: yarp.exe
+            asset_name: yarp-windows-amd64.exe
+          - os: macos-latest
+            artifact_name: yarp
+            asset_name: yarp-macos-amd64
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+
+      - name: Rename binary
+        run: |
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            mv target/release/${{ env.PROGRAM_NAME }}.exe ${{ matrix.artifact_name }}
+          else
+            mv target/release/${{ env.PROGRAM_NAME }} ${{ matrix.artifact_name }}
+          fi
+        shell: bash
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
+          asset_content_type: application/octet-stream
+
+      - name: Generate SHA-256
+        run: |
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            certutil -hashfile ${{ matrix.artifact_name }} SHA256 | grep -E [A-Fa-f0-9]{64} > ${{ matrix.asset_name }}.sha256
+          else
+            shasum -a 256 ${{ matrix.artifact_name }} | cut -d ' ' -f 1 > ${{ matrix.asset_name }}.sha256
+          fi
+        shell: bash
+
+      - name: Upload SHA-256 checksum
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./${{ matrix.asset_name }}.sha256
+          asset_name: ${{ matrix.asset_name }}.sha256
+          asset_content_type: text/plain
