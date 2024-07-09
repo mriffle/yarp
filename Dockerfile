@@ -1,5 +1,5 @@
 # Build stage
-FROM rust:1.79 as builder
+FROM rust:1.79 AS builder
 
 # Create a new empty shell project
 RUN USER=root cargo new --bin yarp
