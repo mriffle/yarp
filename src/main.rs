@@ -14,7 +14,7 @@ use crate::config::parse_args;
 use crate::fasta_processing::process_fasta;
 use crate::utils::{print_usage, log_and_print};
 
-const VERSION: &str = "0.0.5";
+const VERSION: &str = "1.0.0";
 const PROGRAM_NAME: &str = "YARP (Yet Another Rearranger of Peptides)";
 
 fn main() {
