@@ -43,7 +43,7 @@ fn best_shuffle_peptides(peptides: &[String], original_sequence: &str, num_shuff
         let shuffled = shuffle_peptides(peptides, rng);
         let score = calculate_similarity(&shuffled, original_sequence);
 
-        if score < best_score || (score == best_score && shuffled < best_shuffle) {
+        if score < best_score {
             best_score = score;
             best_shuffle = shuffled;
         }
