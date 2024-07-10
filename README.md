@@ -52,13 +52,13 @@ Here are examples of how to run YARP for the platforms available on the
 ``yarp-windows-amd64.exe --fasta=c:\data\yeast.fasta >yeast_plus_decoys.fasta``
 
 #### Mac OS Example:
-``yarp-windows-amd64.exe --fasta=c:\data\yeast.fasta --decoy-string=YARP_ >yeast_plus_decoys.fasta``
+``yarp-macos-amd64 --fasta=c:\data\yeast.fasta --decoy-string=YARP_ >yeast_plus_decoys.fasta``
 
 Note: this method overrides the default decoy string, changing it to "YARP_". All decoy protein
 entries in the FASTA will begin with "YARP_". The default is "DECOY_".
 
 #### Linux Example:
-``yarp-macos-amd64 --fasta=c:\data\yeast.fasta --method=shuffle >yeast_plus_decoys.fasta``
+``yarp-linux-amd64 --fasta=c:\data\yeast.fasta --method=shuffle >yeast_plus_decoys.fasta``
 
 Note: this method overrides the default shuffle method.
 
