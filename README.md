@@ -49,21 +49,21 @@ Here are examples of how to run YARP for the platforms available on the
 [latest releases](https://github.com/mriffle/yarp/releases) page.
 
 #### Windows Example:
-``yarp-windows-amd64.exe --fasta=c:\data\yeast.fasta``
+``yarp-windows-amd64.exe --fasta=c:\data\yeast.fasta >yeast_plus_decoys.fasta``
 
 #### Mac OS Example:
-``yarp-windows-amd64.exe --fasta=c:\data\yeast.fasta --decoy-string=YARP_``
+``yarp-windows-amd64.exe --fasta=c:\data\yeast.fasta --decoy-string=YARP_ >yeast_plus_decoys.fasta``
 
 Note: this method overrides the default decoy string, changing it to "YARP_". All decoy protein
 entries in the FASTA will begin with "YARP_". The default is "DECOY_".
 
 #### Linux Example:
-``yarp-macos-amd64 --fasta=c:\data\yeast.fasta --method=shuffle``
+``yarp-macos-amd64 --fasta=c:\data\yeast.fasta --method=shuffle >yeast_plus_decoys.fasta``
 
 Note: this method overrides the default shuffle method.
 
 #### Docker Example:
-``docker run --rm -it --user $(id -u):$(id -g) -v `pwd`:`pwd`  -w `pwd` mriffle/yarp:latest yarp --method=shuffle --num-shuffles=20 --decoy-string=YARP_``
+``docker run --rm -it --user $(id -u):$(id -g) -v `pwd`:`pwd`  -w `pwd` mriffle/yarp:latest yarp --method=shuffle --num-shuffles=20 --decoy-string=YARP_ >yeast_plus_decoys.fasta``
 
 Note: this method performs 20 shuffles and chooses the one that is least similar to the starting peptide and uses
 "YARP_" as the decoy string.
