@@ -21,10 +21,10 @@ RUN rm ./target/release/deps/yarp*
 RUN cargo build --release
 
 # Final stage
-FROM ubuntu:focal
+FROM ubuntu:jammy
 
 LABEL maintainer="Michael Riffle <mriffle@uw.edu>"
-LABEL version="1.0.1"
+LABEL version="1.0.2"
 LABEL description="Docker image for the yarp program"
 LABEL org.opencontainers.image.source="https://github.com/mriffle/yarp"
 
