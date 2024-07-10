@@ -3,14 +3,25 @@
 use std::io::Write;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
+use std::collections::HashMap;
 use crate::config::{Config, DecoyMethod};
 use crate::protease::digest_sequence;
 
-pub fn write_decoy_entry<W: Write>(config: &Config, writer: &mut W, header: &str, sequence: &str, rng: &mut StdRng) -> std::io::Result<()> {
+// New type alias for our peptide cache
+type PeptideCache = HashMap<String, String>;
+
+pub fn write_decoy_entry<W: Write>(
+    config: &Config,
+    writer: &mut W,
+    header: &str,
+    sequence: &str,
+    rng: &mut StdRng,
+    peptide_cache: &mut PeptideCache
+) -> std::io::Result<()> {
     let decoy_header = format!(">{}{}", config.decoy_prefix, &header[1..]);
     let peptides = digest_sequence(sequence, config.protease);
     let decoy_sequence = match config.decoy_method {
-        DecoyMethod::Shuffle => best_shuffle_peptides(&peptides, config.num_shuffles, rng),
+        DecoyMethod::Shuffle => best_shuffle_peptides(&peptides, config.num_shuffles, rng, peptide_cache),
         DecoyMethod::Reverse => reverse_peptides(&peptides),
     };
     writeln!(writer, "{}", decoy_header)?;
@@ -33,9 +44,22 @@ fn reverse_peptides(peptides: &[String]) -> String {
     }).collect()
 }
 
-fn best_shuffle_peptides(peptides: &[String], num_shuffles: usize, rng: &mut StdRng) -> String {
+fn best_shuffle_peptides(
+    peptides: &[String],
+    num_shuffles: usize,
+    rng: &mut StdRng,
+    peptide_cache: &mut PeptideCache
+) -> String {
     peptides.iter()
-        .map(|peptide| best_shuffle_peptide(peptide, num_shuffles, rng))
+        .map(|peptide| {
+            if let Some(cached) = peptide_cache.get(peptide) {
+                cached.clone()
+            } else {
+                let shuffled = best_shuffle_peptide(peptide, num_shuffles, rng);
+                peptide_cache.insert(peptide.clone(), shuffled.clone());
+                shuffled
+            }
+        })
         .collect()
 }
 
