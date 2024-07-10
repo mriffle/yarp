@@ -9,7 +9,7 @@ use crate::config::Config;
 use crate::decoy_generation::{write_decoy_entry, fix_sequence};
 
 pub fn process_fasta(config: &Config, _log_file: &mut File) -> std::io::Result<usize> {
-    let input_file = File::open(&config.input_path)?;
+    let input_file = File::open(&config.fasta_file)?;
     let reader = BufReader::new(input_file);
 
     let mut writer = std::io::stdout();

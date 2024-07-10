@@ -1,5 +1,3 @@
-// src/main.rs
-
 mod config;
 mod fasta_processing;
 mod decoy_generation;
@@ -10,35 +8,17 @@ use std::process;
 use std::time::Instant;
 use std::fs::OpenOptions;
 
-use crate::config::parse_args;
+use crate::config::Config;
 use crate::fasta_processing::process_fasta;
-use crate::utils::{print_usage, log_and_print};
+use crate::utils::log_and_print;
 
 const VERSION: &str = "1.0.2";
 const PROGRAM_NAME: &str = "YARP (Yet Another Rearranger of Peptides)";
 
 fn main() {
     let start_time = Instant::now();
-    let args: Vec<String> = std::env::args().collect();
 
-    if args.len() < 2 {
-        print_usage(PROGRAM_NAME, VERSION);
-        process::exit(1);
-    }
-
-    match args[1].as_str() {
-        "--help" => {
-            print_usage(PROGRAM_NAME, VERSION);
-            process::exit(0);
-        },
-        "--version" => {
-            println!("{} v{}", PROGRAM_NAME, VERSION);
-            process::exit(0);
-        },
-        _ => {}
-    }
-
-    let config = match parse_args(&args) {
+    let config = match Config::new() {
         Ok(c) => c,
         Err(e) => {
             eprintln!("Error: {}", e);
@@ -46,7 +26,7 @@ fn main() {
         }
     };
 
-    let log_path = format!("{}.log", config.input_path);
+    let log_path = format!("{}.log", config.fasta_file.display());
     let mut log_file = match OpenOptions::new().create(true).write(true).truncate(true).open(&log_path) {
         Ok(file) => file,
         Err(e) => {
