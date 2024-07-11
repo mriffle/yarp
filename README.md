@@ -18,7 +18,7 @@ Mac OS, and Linux are supported.
 YARP exists as a Docker image on Docker Hub. You can run with a command similar to the following to run
 the latest version:
 
-``docker run --rm -it --user $(id -u):$(id -g) -v `pwd`:`pwd`  -w `pwd` mriffle/yarp:latest yarp``
+``docker run --rm --user $(id -u):$(id -g) -v `pwd`:`pwd`  -w `pwd` mriffle/yarp:latest yarp``
 
 ## How to Run YARP
 YARP is a command line program. Run with no arguments to see the following help text:
@@ -66,7 +66,7 @@ entries in the FASTA will begin with "YARP_". The default is "DECOY_".
 Note: this method overrides the default shuffle method.
 
 #### Docker Example:
-``docker run --rm -it --user $(id -u):$(id -g) -v `pwd`:`pwd`  -w `pwd` mriffle/yarp:latest yarp --fasta-file=c:\data\yeast.fasta --decoy-method=shuffle --num-shuffles=20 --decoy-prefix=YARP_ >yeast_plus_decoys.fasta``
+``docker run --rm --user $(id -u):$(id -g) -v `pwd`:`pwd`  -w `pwd` mriffle/yarp:latest yarp --fasta-file=c:\data\yeast.fasta --decoy-method=shuffle --num-shuffles=20 --decoy-prefix=YARP_ >yeast_plus_decoys.fasta``
 
 Note: this method performs 20 shuffles and chooses the one that is least similar to the starting peptide and uses
 "YARP_" as the decoy string.
