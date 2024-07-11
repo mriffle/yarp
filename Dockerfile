@@ -24,7 +24,7 @@ RUN cargo build --release
 FROM ubuntu:jammy
 
 LABEL maintainer="Michael Riffle <mriffle@uw.edu>"
-LABEL version="1.1.0"
+LABEL version="1.2.0"
 LABEL description="Docker image for the yarp program"
 LABEL org.opencontainers.image.source="https://github.com/mriffle/yarp"
 
