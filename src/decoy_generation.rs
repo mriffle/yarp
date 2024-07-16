@@ -3,12 +3,13 @@
 use std::io::Write;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use crate::config::{Config, DecoyMethod};
 use crate::protease::digest_sequence;
 
-// New type alias for our peptide cache
+// Type aliases for our data structures
 type PeptideCache = HashMap<String, String>;
+type AminoAcidMasses = HashMap<char, f64>;
 
 pub fn write_decoy_entry<W: Write>(
     config: &Config,
@@ -68,12 +69,13 @@ fn best_shuffle_peptide(peptide: &str, num_shuffles: usize, rng: &mut StdRng) ->
         return peptide.to_string();
     }
 
+    let (original_y_ions, original_b_ions) = calculate_fragment_ion_masses(peptide);
     let mut best_shuffle = peptide.to_string();
-    let mut best_score = (usize::MAX, usize::MAX);
+    let mut best_score = usize::MAX;
 
     for _ in 0..num_shuffles {
         let shuffled = shuffle_single_peptide(peptide, rng);
-        let score = calculate_similarity(&shuffled, peptide);
+        let score = calculate_similarity_with_original(&shuffled, &original_y_ions, &original_b_ions);
         if score < best_score {
             best_score = score;
             best_shuffle = shuffled;
@@ -96,12 +98,45 @@ fn shuffle_single_peptide(peptide: &str, rng: &mut StdRng) -> String {
     }
 }
 
-fn calculate_similarity(sequence1: &str, sequence2: &str) -> (usize, usize) {
-    let same_adjacency = sequence1.chars().zip(sequence1.chars().skip(1))
-        .zip(sequence2.chars().zip(sequence2.chars().skip(1)))
-        .filter(|&((a1, a2), (b1, b2))| a1 == b1 && a2 == b2)
-        .count();
-    let same_position = sequence1.chars().zip(sequence2.chars()).filter(|&(a, b)| a == b).count();
+fn create_amino_acid_masses() -> AminoAcidMasses {
+    [
+        ('G', 57.021463735), ('A', 71.037113805), ('S', 87.032028435),
+        ('P', 97.052763875), ('V', 99.068413945), ('T', 101.047678505),
+        ('C', 103.009184505), ('L', 113.084064015), ('I', 113.084064015),
+        ('N', 114.042927470), ('D', 115.026943065), ('Q', 128.058577540),
+        ('K', 128.094963050), ('E', 129.042593135), ('M', 131.040484645),
+        ('H', 137.058911875), ('F', 147.068413945), ('U', 150.953633405),
+        ('R', 156.101111050), ('Y', 163.063328575), ('W', 186.079312980),
+        ('O', 237.147726925),
+    ].iter().cloned().collect()
+}
 
-    (same_adjacency, same_position)
+fn calculate_fragment_ion_masses(peptide: &str) -> (HashSet<i64>, HashSet<i64>) {
+    let amino_acid_masses = create_amino_acid_masses();
+    let mut y_ions = HashSet::new();
+    let mut b_ions = HashSet::new();
+    let mut y_mass = 0.0;
+    let mut b_mass = 0.0;
+
+    for (y_aa, b_aa) in peptide.chars().zip(peptide.chars().rev()) {
+        y_mass += amino_acid_masses[&y_aa];
+        b_mass += amino_acid_masses[&b_aa];
+        y_ions.insert(y_mass.round() as i64);
+        b_ions.insert(b_mass.round() as i64);
+    }
+
+    (y_ions, b_ions)
+}
+
+fn calculate_similarity_with_original(
+    shuffled_peptide: &str,
+    original_y_ions: &HashSet<i64>,
+    original_b_ions: &HashSet<i64>
+) -> usize {
+    let (shuffled_y_ions, shuffled_b_ions) = calculate_fragment_ion_masses(shuffled_peptide);
+
+    let y_common = shuffled_y_ions.intersection(original_y_ions).count();
+    let b_common = shuffled_b_ions.intersection(original_b_ions).count();
+
+    y_common + b_common
 }
