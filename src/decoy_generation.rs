@@ -6,6 +6,7 @@ use rand::seq::SliceRandom;
 use std::collections::{HashMap, HashSet};
 use crate::config::{Config, DecoyMethod};
 use crate::protease::digest_sequence;
+use log::warn;
 
 // Type aliases for our data structures
 type PeptideCache = HashMap<String, String>;
@@ -118,9 +119,15 @@ fn calculate_fragment_ion_masses(peptide: &str) -> (HashSet<i64>, HashSet<i64>) 
     let mut y_mass = 0.0;
     let mut b_mass = 0.0;
 
-    for (y_aa, b_aa) in peptide.chars().zip(peptide.chars().rev()) {
-        y_mass += amino_acid_masses[&y_aa];
-        b_mass += amino_acid_masses[&b_aa];
+    for (i, (y_aa, b_aa)) in peptide.chars().zip(peptide.chars().rev()).enumerate() {
+        y_mass += amino_acid_masses.get(&y_aa).copied().unwrap_or_else(|| {
+            warn!("Unknown amino acid '{}' found at position {} in peptide. Using mass 0.0.", y_aa, i + 1);
+            0.0
+        });
+        b_mass += amino_acid_masses.get(&b_aa).copied().unwrap_or_else(|| {
+            warn!("Unknown amino acid '{}' found at position {} from end in peptide. Using mass 0.0.", b_aa, peptide.len() - i);
+            0.0
+        });
         y_ions.insert(y_mass.round() as i64);
         b_ions.insert(b_mass.round() as i64);
     }
