@@ -117,16 +117,22 @@ fn calculate_fragment_ion_masses(peptide: &str) -> HashSet<i64> {
     let mut fragment_ions = HashSet::new();
     let mut y_mass = 0.0;
     let mut b_mass = 0.0;
+    let peptide_chars: Vec<char> = peptide.chars().collect();
+    let peptide_len = peptide_chars.len();
 
-    for (i, aa) in peptide.chars().enumerate() {
-        y_mass += amino_acid_masses.get(&aa).copied().unwrap_or_else(|| {
-            eprintln!("Unknown amino acid '{}' found at position {} in peptide. Using mass 0.0.", aa, i + 1);
+    for i in 0..peptide_len {
+        let y_aa = peptide_chars[i];
+        let b_aa = peptide_chars[peptide_len - 1 - i];
+
+        y_mass += amino_acid_masses.get(&y_aa).copied().unwrap_or_else(|| {
+            eprintln!("Unknown amino acid '{}' found at position {} in peptide. Using mass 0.0.", y_aa, i + 1);
             0.0
         });
-        b_mass += amino_acid_masses.get(&peptide.chars().rev().nth(i).unwrap()).copied().unwrap_or_else(|| {
-            eprintln!("Unknown amino acid '{}' found at position {} from end in peptide. Using mass 0.0.", aa, peptide.len() - i);
+        b_mass += amino_acid_masses.get(&b_aa).copied().unwrap_or_else(|| {
+            eprintln!("Unknown amino acid '{}' found at position {} from end in peptide. Using mass 0.0.", b_aa, peptide_len - i);
             0.0
         });
+
         fragment_ions.insert(y_mass.round() as i64);
         fragment_ions.insert(b_mass.round() as i64);
     }
