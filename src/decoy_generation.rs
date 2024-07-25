@@ -70,13 +70,13 @@ fn best_shuffle_peptide(peptide: &str, num_shuffles: usize, rng: &mut StdRng) ->
         return peptide.to_string();
     }
 
-    let (original_y_ions, original_b_ions) = calculate_fragment_ion_masses(peptide);
+    let original_fragment_ions = calculate_fragment_ion_masses(peptide);
     let mut best_shuffle = peptide.to_string();
     let mut best_score = usize::MAX;
 
     for _ in 0..num_shuffles {
         let shuffled = shuffle_single_peptide(peptide, rng);
-        let score = calculate_similarity_with_original(&shuffled, &original_y_ions, &original_b_ions);
+        let score = calculate_similarity_with_original(peptide, &shuffled, &original_fragment_ions);
         if score < best_score {
             best_score = score;
             best_shuffle = shuffled;
