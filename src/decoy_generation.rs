@@ -112,38 +112,46 @@ fn create_amino_acid_masses() -> AminoAcidMasses {
     ].iter().cloned().collect()
 }
 
-fn calculate_fragment_ion_masses(peptide: &str) -> (HashSet<i64>, HashSet<i64>) {
+fn calculate_fragment_ion_masses(peptide: &str) -> HashSet<i64> {
     let amino_acid_masses = create_amino_acid_masses();
-    let mut y_ions = HashSet::new();
-    let mut b_ions = HashSet::new();
+    let mut fragment_ions = HashSet::new();
     let mut y_mass = 0.0;
     let mut b_mass = 0.0;
 
-    for (i, (y_aa, b_aa)) in peptide.chars().zip(peptide.chars().rev()).enumerate() {
-        y_mass += amino_acid_masses.get(&y_aa).copied().unwrap_or_else(|| {
-            warn!("Unknown amino acid '{}' found at position {} in peptide. Using mass 0.0.", y_aa, i + 1);
+    for (i, aa) in peptide.chars().enumerate() {
+        y_mass += amino_acid_masses.get(&aa).copied().unwrap_or_else(|| {
+            eprintln!("Unknown amino acid '{}' found at position {} in peptide. Using mass 0.0.", aa, i + 1);
             0.0
         });
-        b_mass += amino_acid_masses.get(&b_aa).copied().unwrap_or_else(|| {
-            warn!("Unknown amino acid '{}' found at position {} from end in peptide. Using mass 0.0.", b_aa, peptide.len() - i);
+        b_mass += amino_acid_masses.get(&peptide.chars().rev().nth(i).unwrap()).copied().unwrap_or_else(|| {
+            eprintln!("Unknown amino acid '{}' found at position {} from end in peptide. Using mass 0.0.", aa, peptide.len() - i);
             0.0
         });
-        y_ions.insert(y_mass.round() as i64);
-        b_ions.insert(b_mass.round() as i64);
+        fragment_ions.insert(y_mass.round() as i64);
+        fragment_ions.insert(b_mass.round() as i64);
     }
 
-    (y_ions, b_ions)
+    fragment_ions
 }
 
 fn calculate_similarity_with_original(
+    original_peptide: &str,
     shuffled_peptide: &str,
-    original_y_ions: &HashSet<i64>,
-    original_b_ions: &HashSet<i64>
+    original_fragment_ions: &HashSet<i64>
 ) -> usize {
-    let (shuffled_y_ions, shuffled_b_ions) = calculate_fragment_ion_masses(shuffled_peptide);
+    let shuffled_fragment_ions = calculate_fragment_ion_masses(shuffled_peptide);
 
-    let y_common = shuffled_y_ions.intersection(original_y_ions).count();
-    let b_common = shuffled_b_ions.intersection(original_b_ions).count();
+    let intersection = shuffled_fragment_ions.intersection(original_fragment_ions).cloned().collect::<HashSet<_>>();
+    let intersection_size = intersection.len();
 
-    y_common + b_common
+    eprintln!("Comparison:");
+    eprintln!("  Original peptide: {}", original_peptide);
+    eprintln!("  Shuffled peptide: {}", shuffled_peptide);
+    eprintln!("  Original fragment ions: {:?}", original_fragment_ions);
+    eprintln!("  Shuffled fragment ions: {:?}", shuffled_fragment_ions);
+    eprintln!("  Intersection: {:?}", intersection);
+    eprintln!("  Intersection size: {}", intersection_size);
+    eprintln!();
+
+    intersection_size
 }
