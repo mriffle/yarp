@@ -79,7 +79,7 @@ fn best_shuffle_peptide(peptide: &str, num_shuffles: usize, rng: &mut StdRng) ->
 
     // Determine the minimum possible score
     let min_possible_score = if peptide.ends_with('K') || peptide.ends_with('R') {
-        1
+        2
     } else {
         0
     };
