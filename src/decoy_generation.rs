@@ -69,6 +69,10 @@ fn best_shuffle_peptide(peptide: &str, num_shuffles: usize, rng: &mut StdRng) ->
         return peptide.to_string();
     }
 
+    if peptide.len() == 2 && (peptide.ends_with('K') || peptide.ends_with('R')) {
+        return peptide.to_string();
+    }
+
     let original_fragment_ions = calculate_fragment_ion_masses(peptide);
     let mut best_shuffle = peptide.to_string();
     let mut best_score = usize::MAX;
