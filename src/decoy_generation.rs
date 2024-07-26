@@ -73,12 +73,24 @@ fn best_shuffle_peptide(peptide: &str, num_shuffles: usize, rng: &mut StdRng) ->
     let mut best_shuffle = peptide.to_string();
     let mut best_score = usize::MAX;
 
+    // Determine the minimum possible score
+    let min_possible_score = if peptide.ends_with('K') || peptide.ends_with('R') {
+        1
+    } else {
+        0
+    };
+
     for _ in 0..num_shuffles {
         let shuffled = shuffle_single_peptide(peptide, rng);
         let score = calculate_similarity_with_original(&shuffled, &original_fragment_ions);
         if score < best_score {
             best_score = score;
             best_shuffle = shuffled;
+        }
+
+        // Stop if we find a shuffle with the minimum possible score
+        if best_score == min_possible_score {
+            break;
         }
     }
 
@@ -119,7 +131,7 @@ fn calculate_fragment_ion_masses(peptide: &str) -> HashSet<i64> {
     let peptide_chars: Vec<char> = peptide.chars().collect();
     let peptide_len = peptide_chars.len();
 
-    for i in 0..peptide_len {
+    for i in 0..peptide_len - 1 {  // Changed to stop before the last amino acid
         let y_aa = peptide_chars[i];
         let b_aa = peptide_chars[peptide_len - 1 - i];
 
