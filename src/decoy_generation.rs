@@ -99,6 +99,8 @@ fn best_shuffle_peptide(peptide: &str, num_shuffles: usize, rng: &mut StdRng) ->
         }
     }
 
+    eprintln!("Best score: {}...", best_score);
+
     best_shuffle
 }
 
