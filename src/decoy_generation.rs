@@ -83,6 +83,13 @@ fn best_shuffle_peptide(peptide: &str, num_shuffles: usize, rng: &mut StdRng) ->
         }
     }
 
+    eprintln!("Best peptide result:");
+    eprintln!("  Original peptide: {}", peptide);
+    eprintln!("  Shuffled peptide: {}", best_shuffle);
+    eprintln!("  Original fragment ions: {:?}", original_fragment_ions);
+    eprintln!("  Intersection size: {}", best_score);
+    eprintln!();
+
     best_shuffle
 }
 
@@ -149,15 +156,6 @@ fn calculate_similarity_with_original(
 
     let intersection = shuffled_fragment_ions.intersection(original_fragment_ions).cloned().collect::<HashSet<_>>();
     let intersection_size = intersection.len();
-
-    eprintln!("Comparison:");
-    eprintln!("  Original peptide: {}", original_peptide);
-    eprintln!("  Shuffled peptide: {}", shuffled_peptide);
-    eprintln!("  Original fragment ions: {:?}", original_fragment_ions);
-    eprintln!("  Shuffled fragment ions: {:?}", shuffled_fragment_ions);
-    eprintln!("  Intersection: {:?}", intersection);
-    eprintln!("  Intersection size: {}", intersection_size);
-    eprintln!();
 
     intersection_size
 }
