@@ -94,12 +94,9 @@ fn best_shuffle_peptide(peptide: &str, num_shuffles: usize, rng: &mut StdRng) ->
 
         // Stop if we find a shuffle with the minimum possible score
         if best_score == min_possible_score {
-            eprintln!("Hit min {}, breaking...", best_score);
             break;
         }
     }
-
-    eprintln!("Best score: {}...", best_score);
 
     best_shuffle
 }
