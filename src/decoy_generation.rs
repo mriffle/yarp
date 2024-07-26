@@ -6,7 +6,6 @@ use rand::seq::SliceRandom;
 use std::collections::{HashMap, HashSet};
 use crate::config::{Config, DecoyMethod};
 use crate::protease::digest_sequence;
-use log::warn;
 
 // Type aliases for our data structures
 type PeptideCache = HashMap<String, String>;
@@ -82,13 +81,6 @@ fn best_shuffle_peptide(peptide: &str, num_shuffles: usize, rng: &mut StdRng) ->
             best_shuffle = shuffled;
         }
     }
-
-    eprintln!("Best peptide result:");
-    eprintln!("  Original peptide: {}", peptide);
-    eprintln!("  Shuffled peptide: {}", best_shuffle);
-    eprintln!("  Original fragment ions: {:?}", original_fragment_ions);
-    eprintln!("  Intersection size: {}", best_score);
-    eprintln!();
 
     best_shuffle
 }
