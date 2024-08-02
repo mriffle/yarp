@@ -15,7 +15,7 @@ pub enum Protease {
 #[derive(Parser, Debug)]
 #[command(name = "YARP")]
 #[command(author = "Michael Riffle <mriffle@uw.edu>")]
-#[command(version = "1.2.0")]
+#[command(version = "1.3.0")]
 #[command(about = "Yet Another Rearranger of Peptides", long_about = None)]
 #[command(arg_required_else_help = true)]
 pub struct Config {
