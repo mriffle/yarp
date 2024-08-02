@@ -41,11 +41,8 @@ Options:
 ```
 
 Note: If using ``--num-shuffles=X`` with ``X`` greater than 1, and if using ``--decoy-method=shuffle``, YARP will
-perform ``X`` shuffles of the peptide and choose the one least similar to the original peptide sequence. The
-least similar peptide is the one with the fewest number of residues in the same position and the fewest number
-of instances of identical adjacent residues. For example `PEPTIDE` and `EPTIDEP` have no residues in the same
-position, but have a large number of identical adjacent residues, since the sequence is the same, just shifted
-by one.
+perform ``X`` shuffles of the peptide and choose the one least similar to the original peptide sequence. Similarity
+is based on the number of fragment ion masses in common with the unshuffled original sequence.
 
 ### Examples for running YARP
 Here are examples of how to run YARP for the platforms available on the
